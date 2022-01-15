@@ -179,7 +179,21 @@ long LinuxParser::UpTime(int pid[[maybe_unused]])
 {
   // https://man7.org/linux/man-pages/man5/proc.5.html
   // Field 22 of /proc/[pid]/stat is utime
-
+  // Used LinuxParser::Kernel() code refactored for long int.
+  int targetField = 22;
+  long uptime;
+  string line;
+  std::ifstream stream(kProcDirectory + to_string(pid) + kUptimeFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    for(int i = 0; i < targetField; i++)
+    {
+      linestream >> uptime;
+    }
+    
+  }
+  return uptime;
   // return the UpTime of a given process.
   return 0;
 }
