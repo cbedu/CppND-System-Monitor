@@ -135,16 +135,14 @@ int LinuxParser::TotalProcesses()
   return 0;
 }
 
-// TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses()
+template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
 {
-  // /proc/status has running procs as a field
-
   string line, key;
-  int val; // istream arbitrarily takes characters until ws, it doesn't care what.
+  T val; // istream arbitrarily takes characters until ws, it doesn't care what.
+  T returnVal;
 
   // repurposed from LinuxParser::OperatingSystem
-  std::ifstream filestream(kProcDirectory + kStatFilename);
+  std::ifstream filestream(_filePath);
   if (filestream.is_open())
   {
     while (std::getline(filestream, line))
@@ -152,15 +150,23 @@ int LinuxParser::RunningProcesses()
       std::istringstream linestream(line);
       while (linestream >> key >> val)
       {
-        if (key == "procs_running")
+        if (key == _key)
         {
-          return val;
+          returnVal = val;
+          break;
         }
       }
     }
   }
-  
-  return 0;
+
+  return returnVal;
+}
+
+// TODO: Read and return the number of running processes
+int LinuxParser::RunningProcesses()
+{
+  // /proc/status has running procs as a field
+  return LinuxParser::KeyValLookup<int>(kProcDirectory + kStatFilename, "procs_running");
 }
 
 // TODO: Read and return the command associated with a process
