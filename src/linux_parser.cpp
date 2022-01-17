@@ -130,6 +130,7 @@ vector<string> LinuxParser::CpuUtilization()
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses()
 {
+  // /proc/stat has "processes" field
   // return total of all processes
   return 0;
 }
@@ -137,7 +138,28 @@ int LinuxParser::TotalProcesses()
 // TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses()
 {
-  // return total currently running processes
+  // /proc/status has running procs as a field
+
+  string line, key;
+  int val; // istream arbitrarily takes characters until ws, it doesn't care what.
+
+  // repurposed from LinuxParser::OperatingSystem
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open())
+  {
+    while (std::getline(filestream, line))
+    {
+      std::istringstream linestream(line);
+      while (linestream >> key >> val)
+      {
+        if (key == "procs_running")
+        {
+          return val;
+        }
+      }
+    }
+  }
+  
   return 0;
 }
 
@@ -145,6 +167,7 @@ int LinuxParser::RunningProcesses()
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid[[maybe_unused]])
 {
+  // easy: /proc/[pid]/cmdline
   // return the command of a given process
   return string();
 }
@@ -153,6 +176,11 @@ string LinuxParser::Command(int pid[[maybe_unused]])
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Ram(int pid[[maybe_unused]])
 {
+  // https://man7.org/linux/man-pages/man5/proc.5.html
+  // /proc/[pid]/status has VmXXX for memory mappings for fast values
+  // statm values match status for what we need
+  // smaps is more accurate but much slower.
+
   // return string of memory used by a given process
   return string();
 }
@@ -161,6 +189,8 @@ string LinuxParser::Ram(int pid[[maybe_unused]])
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Uid(int pid[[maybe_unused]])
 {
+  // from /proc/[pid]/status   grab string starting "Uid:"
+  //  just take first field (real uid) for now
   // return the string representation of the userID of a given process
   return string();
 }
@@ -169,13 +199,14 @@ string LinuxParser::Uid(int pid[[maybe_unused]])
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::User(int pid[[maybe_unused]])
 {
+  // scan /etc/passwd for the uid, extract name
   // return the user string of a given process
   return string();
 }
 
-// TODO: Read and return the uptime of a process
+// TEST : Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]])
+long LinuxParser::UpTime(int pid)
 {
   // https://man7.org/linux/man-pages/man5/proc.5.html
   // Field 22 of /proc/[pid]/stat is utime
