@@ -135,33 +135,6 @@ int LinuxParser::TotalProcesses()
   return 0;
 }
 
-template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
-{
-  string line, key;
-  T val; // istream arbitrarily takes characters until ws, it doesn't care what.
-  T returnVal;
-
-  // repurposed from LinuxParser::OperatingSystem
-  std::ifstream filestream(_filePath);
-  if (filestream.is_open())
-  {
-    while (std::getline(filestream, line))
-    {
-      std::istringstream linestream(line);
-      while (linestream >> key >> val)
-      {
-        if (key == _key)
-        {
-          returnVal = val;
-          break;
-        }
-      }
-    }
-  }
-
-  return returnVal;
-}
-
 // TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses()
 {
@@ -233,4 +206,32 @@ long LinuxParser::UpTime(int pid)
   return uptime;
   // return the UpTime of a given process.
   return 0;
+}
+
+// Helper function
+template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
+{
+  string line, key;
+  T val; // istream arbitrarily takes characters until ws, it doesn't care what.
+  T returnVal;
+
+  // repurposed from LinuxParser::OperatingSystem
+  std::ifstream filestream(_filePath);
+  if (filestream.is_open())
+  {
+    while (std::getline(filestream, line))
+    {
+      std::istringstream linestream(line);
+      while (linestream >> key >> val)
+      {
+        if (key == _key)
+        {
+          returnVal = val;
+          break;
+        }
+      }
+    }
+  }
+
+  return returnVal;
 }
