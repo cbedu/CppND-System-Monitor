@@ -38,7 +38,7 @@ std::string System::OperatingSystem()
     return LinuxParser::OperatingSystem();
 }
 
-// TODO: Return the number of processes actively running on the system
+// DONE : Return the number of processes actively running on the system
 int System::RunningProcesses()
 {
     return LinuxParser::RunningProcesses();
@@ -47,7 +47,7 @@ int System::RunningProcesses()
 // DONE : Return the total number of processes on the system
 int System::TotalProcesses()
 {
-    return LinuxParser::Pids().size();
+    return LinuxParser::TotalProcesses();
 }
 
 // DONE : Return the number of seconds since the system started running

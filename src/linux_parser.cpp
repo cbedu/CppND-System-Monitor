@@ -127,15 +127,19 @@ vector<string> LinuxParser::CpuUtilization()
   return {};
 }
 
-// TODO: Read and return the total number of processes
+// DONE : Read and return the total number of processes
 int LinuxParser::TotalProcesses()
 {
+  // Processes vs threads:
+  // LinuxParser::Pids().size() would give literal process id count.
+  // Does not include threads (E.g. forks)
+
   // /proc/stat has "processes" field
   // return total of all processes
-  return 0;
+  return LinuxParser::KeyValLookup<int>(kProcDirectory + kStatFilename, "processes");
 }
 
-// TODO: Read and return the number of running processes
+// DONE : Read and return the number of running processes
 int LinuxParser::RunningProcesses()
 {
   // /proc/status has running procs as a field
