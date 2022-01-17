@@ -67,11 +67,17 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
+// DONE : Read and return the system memory utilization
 float LinuxParser::MemoryUtilization()
 {
-  // return system memory use (percentage?)
-  return 0.0;
+  // Don't use MemAvailable
+  // (https://superuser.com/questions/980820/what-is-the-difference-between-memfree-and-memavailable-in-proc-meminfo)
+  float memFree = LinuxParser::KeyValLookup<float>(kProcDirectory + kMeminfoFilename, "MemFree:");
+  float memTotal = LinuxParser::KeyValLookup<float>(kProcDirectory + kMeminfoFilename, "MemTotal:");
+  float memUsed = memTotal - memFree;
+
+  // return system memory in use (including cached)
+  return memUsed / memTotal;
 }
 
 // DONE : Read and return the system uptime
