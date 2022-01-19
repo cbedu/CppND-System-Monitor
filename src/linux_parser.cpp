@@ -152,11 +152,20 @@ int LinuxParser::RunningProcesses()
   return LinuxParser::KeyValLookup<int>(kProcDirectory + kStatFilename, "procs_running");
 }
 
-// TODO: Read and return the command associated with a process
+// TESTING : Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid[[maybe_unused]])
 {
   // easy: /proc/[pid]/cmdline
+  string line;
+  std::ifstream stream(kProcDirectory+to_string(pid)+kCmdlineFilename);
+
+  if (stream.is_open())
+  {
+    std::getline(stream, line);
+    return line;
+  }
+
   // return the command of a given process
   return string();
 }
