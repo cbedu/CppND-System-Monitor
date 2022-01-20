@@ -11,17 +11,6 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-// Class to hold static vars for historic value comparison
-class CPUUsageVars{
-  public:
-  static long previousActiveJiffies_;
-  static long previousIdleJiffies_;
-};
-
-// Static var initialisation
-long CPUUsageVars::previousActiveJiffies_ = 0;
-long CPUUsageVars::previousIdleJiffies_ = 0;
-
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
   string line;
@@ -156,11 +145,8 @@ long LinuxParser::ActiveJiffies()
   long total = CumulativeCPUStat(kProcDirectory+kStatFilename,part1_IndexFirst,part1_IndexLast);
   total += CumulativeCPUStat(kProcDirectory+kStatFilename,part2_IndexFirst,part2_IndexLast);
 
-  long deltaT = total - CPUUsageVars::previousActiveJiffies_;
-  CPUUsageVars::previousActiveJiffies_ = total;
-  //return total;
-  return deltaT;
-}
+  return total;
+  }
 
 //  Idle Jiffies = [4] idle + [5] iowait
 // DONE : Read and return the number of idle jiffies for the system
@@ -170,13 +156,7 @@ long LinuxParser::IdleJiffies()
   int indexFirst = 4;
   int indexLast = 5;
   
-  long total = CumulativeCPUStat(kProcDirectory+kStatFilename,indexFirst,indexLast);
-
-  long deltaT;
-  deltaT = total - CPUUsageVars::previousIdleJiffies_;
-  CPUUsageVars::previousIdleJiffies_ = total;
-  //return total;
-  return deltaT;
+  return CumulativeCPUStat(kProcDirectory+kStatFilename,indexFirst,indexLast);
 }
 
 // TODO: Read and return CPU utilization
