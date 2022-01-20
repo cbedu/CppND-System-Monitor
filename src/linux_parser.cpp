@@ -11,6 +11,17 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+// Class to hold static vars for historic value comparison
+class CPUUsageVars{
+  public:
+  static long previousActiveJiffies_;
+  static long previousIdleJiffies_;
+};
+
+// Static var initialisation
+long CPUUsageVars::previousActiveJiffies_ = 0;
+long CPUUsageVars::previousIdleJiffies_ = 0;
+
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
   string line;
@@ -97,13 +108,34 @@ long LinuxParser::UpTime()
   return uptime;
 }
 
-// TODO: Read and return the number of jiffies for the system
+/// Info from 'man proc 5'
+//  Jiffies in /proc/stat:
+//  cpu [1] [2] ... [9] [10]
+//
+// where:
+//  [1]  user       - user mode active
+//  [2]  nice       - user mode active in low priority
+//  [3]  system     - system mode active
+//  [4]  idle       - idle task, USER_HZ * /proc/uptime
+//  [5]  iowait     - time waiting for i/o, unreliable
+//  [6]  irq        - time servicing interrupts
+//  [7]  softirq    - time servicing softirqs
+//  [8]  steal      - time in other o/s when running in virtual envs
+//  [9]  guest      - running a vCPU for vGuest under kernel control
+//  [10] guest_nice - running a vCPU for a 'niced' vGuest under kernel control
+// DONE : Read and return the number of jiffies for the system
 long LinuxParser::Jiffies()
 {
   // return total jiffies for system (since boot?)
-  return 0;
+  return LinuxParser::ActiveJiffies() + LinuxParser::IdleJiffies();
 }
 
+//  Directly Active Jiffies = [1] user + [2] nice + [3] system
+//  Passively Active Jiffies = [6] irq + [7] softirq + [8] steal
+//                              + [9] guest + [10] guest_nice
+//
+//    *[8] steal  is included because it is time that the CPU cannot be idle and indicates 
+//      physical CPU use
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
@@ -112,18 +144,41 @@ long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
   return 0;
 }
 
-// TODO: Read and return the number of active jiffies for the system
+// TESTING : Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies()
 {
   // return active jiffies for system (since boot?)
-  return 0;
+  int part1_IndexFirst = 1;
+  int part1_IndexLast = 3;
+  int part2_IndexFirst = 6;
+  int part2_IndexLast = 10;
+
+  long total = CumulativeCPUStat(kProcDirectory+kStatFilename,part1_IndexFirst,part1_IndexLast);
+  total += CumulativeCPUStat(kProcDirectory+kStatFilename,part2_IndexFirst,part2_IndexLast);
+
+  
+
+  long deltaT = total - CPUUsageVars::previousActiveJiffies_;
+  CPUUsageVars::previousActiveJiffies_ = total;
+
+  return deltaT;
 }
 
-// TODO: Read and return the number of idle jiffies for the system
+//  Idle Jiffies = [4] idle + [5] iowait
+// TESTING : Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies()
 {
   // return idle jiffies for system (since boot?)
-  return 0;
+  int indexFirst = 4;
+  int indexLast = 5;
+  
+  long total = CumulativeCPUStat(kProcDirectory+kStatFilename,indexFirst,indexLast);
+
+  long deltaT;
+  deltaT = total - CPUUsageVars::previousIdleJiffies_;
+  CPUUsageVars::previousIdleJiffies_ = total;
+
+  return deltaT;
 }
 
 // TODO: Read and return CPU utilization
@@ -202,8 +257,7 @@ string LinuxParser::User(int pid[[maybe_unused]])
   return string();
 }
 
-// TEST : Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
+// DONE : Read and return the uptime of a process
 long LinuxParser::UpTime(int pid)
 {
   // https://man7.org/linux/man-pages/man5/proc.5.html
@@ -227,7 +281,7 @@ long LinuxParser::UpTime(int pid)
   return 0;
 }
 
-// Helper function
+//// Helper functions
 template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
 {
   string line, key;
@@ -253,4 +307,45 @@ template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
   }
 
   return returnVal;
+}
+
+// targetRow optional.
+// global CPU is first row, so default value
+// if CPU[1...n] wanted then offset row by CPU number (1 based)
+long LinuxParser::CumulativeCPUStat(string path, int firstEntry, int lastEntry, int targetRow)
+{
+  string line;
+  int rowIndex = 0;
+  int entryIndex = 0;
+  long value;
+  long acc = 0;
+  std::ifstream filestream(path);
+
+  if (filestream.is_open())
+  {
+    while (std::getline(filestream, line))
+    {
+      if(rowIndex == targetRow) // get our target row (E.g. specific CPU entry)
+      {
+        std::istringstream linestream(line); // got whole line as stream
+        while (linestream >> value)
+        {
+          if(entryIndex >= firstEntry) //valid entry to accumulate
+          {
+            acc += value;
+          }
+
+          if(entryIndex >= lastEntry) // used '>=' to optimise over '==' comparison
+          {
+            return acc;
+          }
+
+          entryIndex++;
+        }
+
+        rowIndex++;
+      }
+    }
+  }
+  return acc; // 0 if no entry was found
 }

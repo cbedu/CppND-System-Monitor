@@ -55,6 +55,8 @@ long int UpTime(int pid);
 
 // Helper functions
 template <typename T> T KeyValLookup(std::string filePath, std::string key);
+long CumulativeCPUStat(std::string path, int firstEntry, int lastEntry, int targetRow = 0);
+
 };  // namespace LinuxParser
 
 #endif
