@@ -14,13 +14,13 @@ using std::vector;
 // DONE : Return this process's ID
 int Process::Pid() { return pid_; }
 
-// TESTING : Return this process's CPU utilization
+// DONE : Return this process's CPU utilization
 float Process::CpuUtilization()
 {
     long tempActive = LinuxParser::ActiveJiffies(pid_);
     long tempActiveDelta = tempActive - prevActiveJiffies_;
 
-    long tempTotal = LinuxParser::Jiffies();
+    long tempTotal = LinuxParser::Jiffies();  // Lazy, should be exposing the System var.
     long tempTotalDelta = tempTotal - prevTotalJiffies_;
 
     prevActiveJiffies_ = tempActive;
@@ -43,7 +43,10 @@ string Process::Command()
 string Process::Ram() { return string(); }
 
 // TODO: Return the user (name) that generated this process
-string Process::User() { return string(); }
+string Process::User()
+{
+    return LinuxParser::User(pid_);
+}
 
 // TODO: Return the age of this process (in seconds)
 long int Process::UpTime() { return 0; }
