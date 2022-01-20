@@ -297,7 +297,7 @@ long LinuxParser::CumulativeCPUStat(string path, int firstEntry, int lastEntry, 
   string key;
   int rowIndex = 0;
   int entryIndex = 0;
-  long value;
+  string value;
   long acc = 0;
   std::ifstream filestream(path);
 
@@ -314,7 +314,7 @@ long LinuxParser::CumulativeCPUStat(string path, int firstEntry, int lastEntry, 
         {
           if(entryIndex >= firstEntry) //valid entry to accumulate
           {
-            acc += value;
+            acc += strtol(value.c_str(), nullptr, 10);
           }
 
           if(entryIndex >= lastEntry) // used '>=' to optimise over '==' comparison

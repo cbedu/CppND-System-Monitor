@@ -26,7 +26,11 @@ float Process::CpuUtilization()
     prevActiveJiffies_ = tempActive;
     prevTotalJiffies_ = tempTotal;
 
-    return (float)tempActiveDelta / (float)tempTotalDelta;
+    float val = (float)tempActiveDelta / (float)tempTotalDelta;
+    if(val < 0.00)
+        val = 0.00f;
+    
+    return val;
 }
 
 // DONE : Return the command that generated this process

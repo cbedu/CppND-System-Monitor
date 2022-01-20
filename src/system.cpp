@@ -20,7 +20,7 @@ You need to properly format the uptime. Refer to the comments mentioned in forma
 // TODO: Return the system's CPU
 Processor& System::Cpu() { return cpu_; }
 
-// DONE : Return a container composed of the system's processes
+// UPDATE SORT : Return a container composed of the system's processes
 vector<Process>& System::Processes()
 {
     // Get list of process ids
@@ -29,19 +29,26 @@ vector<Process>& System::Processes()
     // Generate new object for each and populate info
     for (int pid : pids)
     {
-        int found = 0;
         for (Process tempProcess : processes_)
         {
             if( tempProcess.Pid() == pid)
             {
-                found = 1;
-                break;
+                goto FOUND_VALID_PID;
             }
                 
         }
 
         processes_.emplace_back(pid);
     }
+
+FOUND_VALID_PID:
+
+    // Need to sort (by CPU use)
+    std::sort(processes_.begin(),processes_.end(),[ ]( Process left, Process right)
+    {
+        return left.CpuUtilization() > right.CpuUtilization();
+    });
+
     return processes_;
 }
 
