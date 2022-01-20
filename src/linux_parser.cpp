@@ -186,11 +186,10 @@ int LinuxParser::RunningProcesses()
 }
 
 // TESTING : Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid)
 {
   // easy: /proc/[pid]/cmdline
-  string line;
+  string line = "";
   std::ifstream stream(kProcDirectory+to_string(pid)+kCmdlineFilename);
 
   if (stream.is_open())

@@ -21,7 +21,29 @@ You need to properly format the uptime. Refer to the comments mentioned in forma
 Processor& System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+vector<Process>& System::Processes()
+{
+    // Get list of process ids
+    vector<int> pids = LinuxParser::Pids();
+
+    // Generate new object for each and populate info
+    for (int pid : pids)
+    {
+        int found = 0;
+        for (Process tempProcess : processes_)
+        {
+            if( tempProcess.Pid() == pid)
+            {
+                found = 1;
+                break;
+            }
+                
+        }
+
+        processes_.emplace_back(pid);
+    }
+    return processes_;
+}
 
 // DONE : Return the system's kernel identifier (string)
 std::string System::Kernel()
