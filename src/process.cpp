@@ -17,6 +17,10 @@ int Process::Pid() { return pid_; }
 // DONE : Return this process's CPU utilization
 float Process::CpuUtilization()
 {
+    return (float)LinuxParser::ActiveJiffies(pid_)/(float)LinuxParser::Jiffies();
+    return 10.00f; // <<DELETE>>
+
+    // << REWRITE >> This section (or lower) seems to be annoying valgrind.
     long tempActive = LinuxParser::ActiveJiffies(pid_);
     long tempActiveDelta = tempActive - prevActiveJiffies_;
 

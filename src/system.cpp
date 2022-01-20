@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <iostream> //<<DELETE>> Once debug complete
 
 #include "linux_parser.h" // Access to kFile parsing
 #include "process.h"
@@ -25,29 +26,38 @@ vector<Process>& System::Processes()
 {
     // Get list of process ids
     vector<int> pids = LinuxParser::Pids();
-
+    
     // Generate new object for each and populate info
     for (int pid : pids)
     {
+        bool found = false;
         for (Process tempProcess : processes_)
         {
             if( tempProcess.Pid() == pid)
             {
-                goto FOUND_VALID_PID;
+                //goto FOUND_VALID_PID;
+                found = true;
             }
                 
         }
-
-        processes_.emplace_back(pid);
+        if(found == false)
+            processes_.emplace_back(pid);
     }
 
-FOUND_VALID_PID:
-
-    // Need to sort (by CPU use)
-    std::sort(processes_.begin(),processes_.end(),[ ]( Process left, Process right)
+//FOUND_VALID_PID:
+    try
     {
-        return left.CpuUtilization() > right.CpuUtilization();
-    });
+        // Need to sort (by CPU use)
+        std::sort(processes_.begin(),processes_.end(),[ ]( Process left, Process right)
+        {
+            return left.CpuUtilization() > right.CpuUtilization();
+        });
+        processes_.shrink_to_fit();
+    }
+    catch(std::bad_alloc & ba)
+    {
+        std::cerr << "I caught " << ba.what() << '\n';
+    }
 
     return processes_;
 }
