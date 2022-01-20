@@ -144,7 +144,7 @@ long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
   return 0;
 }
 
-// TESTING : Read and return the number of active jiffies for the system
+// DONE : Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies()
 {
   // return active jiffies for system (since boot?)
@@ -156,8 +156,6 @@ long LinuxParser::ActiveJiffies()
   long total = CumulativeCPUStat(kProcDirectory+kStatFilename,part1_IndexFirst,part1_IndexLast);
   total += CumulativeCPUStat(kProcDirectory+kStatFilename,part2_IndexFirst,part2_IndexLast);
 
-  
-
   long deltaT = total - CPUUsageVars::previousActiveJiffies_;
   CPUUsageVars::previousActiveJiffies_ = total;
   //return total;
@@ -165,7 +163,7 @@ long LinuxParser::ActiveJiffies()
 }
 
 //  Idle Jiffies = [4] idle + [5] iowait
-// TESTING : Read and return the number of idle jiffies for the system
+// DONE : Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies()
 {
   // return idle jiffies for system (since boot?)
