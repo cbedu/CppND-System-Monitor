@@ -11,11 +11,23 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-// TODO: Return this process's ID
+// DONE : Return this process's ID
 int Process::Pid() { return pid_; }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+// TESTING : Return this process's CPU utilization
+float Process::CpuUtilization()
+{
+    long tempActive = LinuxParser::ActiveJiffies(pid_);
+    long tempActiveDelta = tempActive - prevActiveJiffies_;
+
+    long tempTotal = LinuxParser::Jiffies();
+    long tempTotalDelta = tempTotal - prevTotalJiffies_;
+
+    prevActiveJiffies_ = tempActive;
+    prevTotalJiffies_ = tempTotal;
+
+    return (float)tempActiveDelta / (float)tempTotalDelta;
+}
 
 // DONE : Return the command that generated this process
 string Process::Command()

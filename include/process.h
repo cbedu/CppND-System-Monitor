@@ -26,6 +26,8 @@ class Process {
   // TODO: Declare any necessary private members
  private:
     int pid_;
+    long prevActiveJiffies_{0};
+    long prevTotalJiffies_{0};
     // std::string user_;
     // std::string command_;
     // float cpuUtilization_;

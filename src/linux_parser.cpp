@@ -119,20 +119,22 @@ long LinuxParser::Jiffies()
   return LinuxParser::ActiveJiffies() + LinuxParser::IdleJiffies();
 }
 
+// TODO: Read and return the number of active jiffies for a PID
+// REMOVE: [[maybe_unused]] once you define the function
+long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
+{
+  // man proc 5  (see proc/[pid]/stat  (14) ... (17))
+  // return active jiffies for a given process
+  // single line
+  return CumulativeCPUStat(kProcDirectory+to_string(pid)+kStatFilename,14,17);
+}
+
 //  Directly Active Jiffies = [1] user + [2] nice + [3] system
 //  Passively Active Jiffies = [6] irq + [7] softirq + [8] steal
 //                              + [9] guest + [10] guest_nice
 //
 //    *[8] steal  is included because it is time that the CPU cannot be idle and indicates 
 //      physical CPU use
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
-{
-  // return active jiffies for a given process
-  return 0;
-}
-
 // DONE : Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies()
 {
@@ -185,7 +187,7 @@ int LinuxParser::RunningProcesses()
   return LinuxParser::KeyValLookup<int>(kProcDirectory + kStatFilename, "procs_running");
 }
 
-// TESTING : Read and return the command associated with a process
+// DONE : Read and return the command associated with a process
 string LinuxParser::Command(int pid)
 {
   // easy: /proc/[pid]/cmdline
