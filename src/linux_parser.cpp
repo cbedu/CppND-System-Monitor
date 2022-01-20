@@ -160,7 +160,7 @@ long LinuxParser::ActiveJiffies()
 
   long deltaT = total - CPUUsageVars::previousActiveJiffies_;
   CPUUsageVars::previousActiveJiffies_ = total;
-
+  //return total;
   return deltaT;
 }
 
@@ -177,7 +177,7 @@ long LinuxParser::IdleJiffies()
   long deltaT;
   deltaT = total - CPUUsageVars::previousIdleJiffies_;
   CPUUsageVars::previousIdleJiffies_ = total;
-
+  //return total;
   return deltaT;
 }
 
@@ -315,6 +315,7 @@ template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
 long LinuxParser::CumulativeCPUStat(string path, int firstEntry, int lastEntry, int targetRow)
 {
   string line;
+  string key;
   int rowIndex = 0;
   int entryIndex = 0;
   long value;
@@ -328,6 +329,8 @@ long LinuxParser::CumulativeCPUStat(string path, int firstEntry, int lastEntry, 
       if(rowIndex == targetRow) // get our target row (E.g. specific CPU entry)
       {
         std::istringstream linestream(line); // got whole line as stream
+        linestream >> key; // discard non numeric entry
+        entryIndex = 1;
         while (linestream >> value)
         {
           if(entryIndex >= firstEntry) //valid entry to accumulate
