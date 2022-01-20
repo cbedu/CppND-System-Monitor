@@ -115,8 +115,16 @@ long LinuxParser::UpTime()
 // DONE : Read and return the number of jiffies for the system
 long LinuxParser::Jiffies()
 {
-  // return total jiffies for system (since boot?)
-  return LinuxParser::ActiveJiffies() + LinuxParser::IdleJiffies();
+  LinuxParser::UpdateGlobalJiffies();
+
+  return globalJiffies->total;
+}
+
+long LinuxParser::JiffiesDelta()
+{
+  LinuxParser::UpdateGlobalJiffies();
+
+  return globalJiffies->totalDelta;
 }
 
 // TODO: Read and return the number of active jiffies for a PID
@@ -129,16 +137,44 @@ long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
   return CumulativeCPUStat(kProcDirectory+to_string(pid)+kStatFilename,14,17);
 }
 
+// This helper function is called by all LinuxParser functions related to global Jiffies.
+// This function will mask a time based gate on getting updated jiffy information.
+// This will make percentage use calcs more stable and make process operation more
+// predicatble.
+void LinuxParser::UpdateGlobalJiffies()
+{
+  long tempUTime = LinuxParser::UpTime();
+  long tempUTimeDelta = tempUTime - globalJiffies->lastUTime;
+  
+  // bail if we don't want to waste the time
+  if(tempUTimeDelta < globalJiffies->minUTimeDelta)
+    return;
+
+  // update our last update time
+  globalJiffies->lastUTime = tempUTime;
+  globalJiffies->lastUTimeDelta = tempUTimeDelta;
+
+  long tempActive = LinuxParser::GetRawJiffies_Active();
+  globalJiffies->activeDelta = tempActive - globalJiffies->active;
+  globalJiffies->active = tempActive;
+
+  long tempIdle = LinuxParser::GetRawJiffies_Idle();
+  globalJiffies->idleDelta = tempIdle - globalJiffies->idle;
+  globalJiffies->idle = tempIdle;
+
+  long tempTotal = tempActive + tempIdle;
+  globalJiffies->totalDelta = tempTotal - globalJiffies->total;
+  globalJiffies->total = tempTotal;
+}
+
 //  Directly Active Jiffies = [1] user + [2] nice + [3] system
 //  Passively Active Jiffies = [6] irq + [7] softirq + [8] steal
 //                              + [9] guest + [10] guest_nice
 //
 //    *[8] steal  is included because it is time that the CPU cannot be idle and indicates 
 //      physical CPU use
-// DONE : Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies()
+long LinuxParser::GetRawJiffies_Active()
 {
-  // return active jiffies for system (since boot?)
   int part1_IndexFirst = 1;
   int part1_IndexLast = 3;
   int part2_IndexFirst = 6;
@@ -146,19 +182,46 @@ long LinuxParser::ActiveJiffies()
 
   long total = CumulativeCPUStat(kProcDirectory+kStatFilename,part1_IndexFirst,part1_IndexLast);
   total += CumulativeCPUStat(kProcDirectory+kStatFilename,part2_IndexFirst,part2_IndexLast);
-
+  
   return total;
-  }
+}
 
 //  Idle Jiffies = [4] idle + [5] iowait
-// DONE : Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies()
+long LinuxParser::GetRawJiffies_Idle()
 {
-  // return idle jiffies for system (since boot?)
   int indexFirst = 4;
   int indexLast = 5;
   
   return CumulativeCPUStat(kProcDirectory+kStatFilename,indexFirst,indexLast);
+}
+
+// DONE : Read and return the number of active jiffies for the system
+long LinuxParser::ActiveJiffies()
+{
+  LinuxParser::UpdateGlobalJiffies();
+  return globalJiffies->active;
+}
+
+// DONE : Read and return the number of idle jiffies for the system
+long LinuxParser::IdleJiffies()
+{
+  LinuxParser::UpdateGlobalJiffies();
+  
+  return globalJiffies->idle;
+}
+
+long LinuxParser::ActiveJiffiesDelta()
+{
+  LinuxParser::UpdateGlobalJiffies();
+  return globalJiffies->activeDelta;
+}
+
+
+long LinuxParser::IdleJiffiesDelta()
+{
+  LinuxParser::UpdateGlobalJiffies();
+  
+  return globalJiffies->idleDelta;
 }
 
 // TODO: Read and return CPU utilization
