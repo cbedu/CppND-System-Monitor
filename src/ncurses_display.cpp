@@ -13,7 +13,7 @@ using std::to_string;
 
 // 50 bars uniformly displayed from 0 - 100 %
 // 2% is one bar(|)
-// shrunk to 25 bars (4%/bar) to reduce total required width << TODO undo, or make definable? >>
+// shrunk to 25 bars (4%/bar) to reduce total required width
 std::string NCursesDisplay::ProgressBar(float percent) {
   std::string result{"0%"};
   int size{25};

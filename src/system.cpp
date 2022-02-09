@@ -3,7 +3,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <iostream> //<<DELETE>> Once debug complete
 
 #include "linux_parser.h" // Access to kFile parsing
 #include "process.h"
@@ -19,7 +18,7 @@ using std::vector;
 You need to properly format the uptime. Refer to the comments mentioned in format. cpp for formatting the uptime.*/
 
 // NOTHING-TODO: Return the system's CPU
-Processor& System::Cpu() { return cpu_; }
+Processor& System::Cpu() { return cpu_; } // Not used anywhere in codebase.
 
 // FIND LEAKING ITERATOR : Return a container composed of the system's processes
 vector<Process>& System::Processes()
@@ -41,25 +40,50 @@ vector<Process>& System::Processes()
                 
         }
         if(found == false)
-            processes_.emplace_back(pid);
-    }
-
-//FOUND_VALID_PID:
-    try
-    {
-        // Need to sort (by CPU use)
-        std::sort(processes_.begin(),processes_.end(),[ ]( Process left, Process right)
         {
-            return left.CpuUtilization() > right.CpuUtilization();
-        });
-        processes_.shrink_to_fit();
-    }
-    catch(std::bad_alloc & ba)
-    {
-        std::cerr << "I caught " << ba.what() << '\n';
+            processes_.emplace_back(pid);
+        }
     }
 
+    // Remove missing processes
+    for (vector<Process>::iterator processIter = processes_.begin();
+        processIter != processes_.end() ;)
+    {
+        bool found = false;
+        for (int pid : pids)
+        {
+            if (processIter->Pid() == pid)
+            found = true;
+        }
+
+        if(found == false)
+        {
+            processes_.erase(processIter);
+        }
+        else
+        {
+            processIter++;
+        }
+    }
+    
+    processes_.shrink_to_fit();
     return processes_;
+
+    //// Sorting section can inderterministically cause a bad memory free().
+    // try
+    // {
+    //     // Need to sort (by CPU use)
+    //     std::sort(processes_.begin(),processes_.end(),[ ]( Process left, Process right)
+    //     {
+    //         return right < left;
+    //     });
+    // }
+    // catch(std::bad_alloc & ba)
+    // {
+    //     std::cerr << "I caught " << ba.what() << '\n';
+    // }
+
+    // return processes_;
 }
 
 // DONE : Return the system's kernel identifier (string)

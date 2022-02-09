@@ -17,13 +17,10 @@ int Process::Pid() { return pid_; }
 // DONE : Return this process's CPU utilization
 float Process::CpuUtilization()
 {
-    //return (float)LinuxParser::ActiveJiffies(pid_)/(float)LinuxParser::Jiffies();
-
-    // <<POSSIBLE-TODO>> << REWRITE >> This section (or lower) seems to be annoying valgrind.
     long tempActive = LinuxParser::ActiveJiffies(pid_);
     long tempActiveDelta = tempActive - prevActiveJiffies_;
 
-    long tempTotal = LinuxParser::Jiffies();  // Lazy, should be exposing the System var.
+    long tempTotal = LinuxParser::Jiffies();
     long tempTotalDelta = tempTotal - prevTotalJiffies_;
 
     prevActiveJiffies_ = tempActive;
@@ -61,6 +58,8 @@ long int Process::UpTime()
     return LinuxParser::UpTime() - LinuxParser::UpTime(pid_);
 }
 
-// NOTHING-TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+// DONE: Overload the "less than" comparison operator for Process objects
+bool Process::operator<(Process & a)
+{   // internal values are updated for deltaJiffies so can't be const
+    return this->CpuUtilization() < a.CpuUtilization(); 
+}
