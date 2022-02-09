@@ -17,6 +17,17 @@ int Process::Pid() { return pid_; }
 // DONE : Return this process's CPU utilization
 float Process::CpuUtilization()
 {
+    // cache sidestep
+    long uptime = LinuxParser::UpTime();
+    if(uptime - prevUptime_ < LinuxParser::globalJiffies->minUTimeDelta)
+    {
+        float val = (float)prevActiveJiffies_ / (float)prevTotalJiffies_;
+        if(val < 0.00)
+            val = 0.00f;
+
+        return val;
+    }
+
     long tempActive = LinuxParser::ActiveJiffies(pid_);
     long tempActiveDelta = tempActive - prevActiveJiffies_;
 

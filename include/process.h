@@ -27,6 +27,7 @@ class Process {
     int pid_;
     long prevActiveJiffies_{0};
     long prevTotalJiffies_{0};
+    long prevUptime_{0};
     // std::string user_;
     // std::string command_;
     // float cpuUtilization_;
