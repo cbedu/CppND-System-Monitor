@@ -68,22 +68,6 @@ vector<Process>& System::Processes()
     
     processes_.shrink_to_fit();
     return processes_;
-
-    //// Sorting section can inderterministically cause a bad memory free().
-    // try
-    // {
-    //     // Need to sort (by CPU use)
-    //     std::sort(processes_.begin(),processes_.end(),[ ]( Process left, Process right)
-    //     {
-    //         return right < left;
-    //     });
-    // }
-    // catch(std::bad_alloc & ba)
-    // {
-    //     std::cerr << "I caught " << ba.what() << '\n';
-    // }
-
-    // return processes_;
 }
 
 // DONE : Return the system's kernel identifier (string)
