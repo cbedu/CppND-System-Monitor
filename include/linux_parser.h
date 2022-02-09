@@ -74,6 +74,7 @@ long int UpTime(int pid);
 
 // Helper functions
 template <typename T> T KeyValLookup(std::string filePath, std::string key);
+template <typename T> T LocationValLookup(std::string filePath, long index);
 long CumulativeCPUStat(std::string path, int firstEntry, int lastEntry, int targetRow = 0);
 void UpdateGlobalJiffies();
 long GetRawJiffies_Active();

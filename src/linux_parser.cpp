@@ -274,11 +274,15 @@ string LinuxParser::Command(int pid)
   if (stream.is_open())
   {
     std::getline(stream, line);
-    return line;
+    if(line != "")
+      return line;
   }
 
-  // return the command of a given process
-  return string();
+  //if nothing in cmdline, (E.g. worker thread) then get from stat field.
+  line = LocationValLookup<std::string>(kProcDirectory+to_string(pid)+kStatFilename, 2);
+
+  return line;
+
 }
 
 // DONE: Read and return the memory used by a process
@@ -375,6 +379,34 @@ template <typename T> T LinuxParser::KeyValLookup(string _filePath, string _key)
       while (linestream >> key >> val)
       {
         if (key == _key)
+        {
+          returnVal = val;
+          break;
+        }
+      }
+    }
+  }
+
+  return returnVal;
+}
+
+template <typename T> T LinuxParser::LocationValLookup(string _filePath, long _index)
+{
+  string line, key;
+  T val; // istream arbitrarily takes characters until ws, it doesn't care what.
+  T returnVal;
+  long index_ = 0;
+
+  // repurposed from LinuxParser::OperatingSystem
+  std::ifstream filestream(_filePath);
+  if (filestream.is_open())
+  {
+    while (std::getline(filestream, line))
+    {
+      std::istringstream linestream(line);
+      while (linestream >> val)
+      {
+        if (++index_ == _index)
         {
           returnVal = val;
           break;
