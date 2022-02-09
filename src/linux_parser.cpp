@@ -274,10 +274,14 @@ string LinuxParser::Ram(int pid)
   // /proc/[pid]/status has VmXXX for memory mappings for fast values
   // statm values match status for what we need
   // smaps is more accurate but much slower.
-  string ram = KeyValLookup<string>(kProcDirectory + to_string(pid) + kStatusFilename,"VmRSS:");
-  
+  long ram = KeyValLookup<long>(kProcDirectory + to_string(pid) + kStatusFilename,"VmRSS:");
+  double ram_MB = (double)ram / 1000.00;
+
+  // prettify : https://stackoverflow.com/questions/14520309/the-precision-of-stdto-stringdouble#14520388
+  std::string trimmedString = std::to_string(ram_MB).substr(0, std::to_string(ram_MB).find(".") + 3);
+
   // return string of memory used by a given process
-  return ram;
+  return trimmedString;
 }
 
 // DONE: Read and return the user ID associated with a process
