@@ -18,9 +18,8 @@ int Process::Pid() { return pid_; }
 float Process::CpuUtilization()
 {
     return (float)LinuxParser::ActiveJiffies(pid_)/(float)LinuxParser::Jiffies();
-    return 10.00f; // <<DELETE>>
 
-    // << REWRITE >> This section (or lower) seems to be annoying valgrind.
+    // <<TODO>> << REWRITE >> This section (or lower) seems to be annoying valgrind.
     long tempActive = LinuxParser::ActiveJiffies(pid_);
     long tempActiveDelta = tempActive - prevActiveJiffies_;
 
@@ -33,7 +32,7 @@ float Process::CpuUtilization()
     float val = (float)tempActiveDelta / (float)tempTotalDelta;
     if(val < 0.00)
         val = 0.00f;
-    
+    //return 10.00f; // <<DELETE>>
     return val;
 }
 
@@ -44,9 +43,12 @@ string Process::Command()
 }
 
 // TODO: Return this process's memory utilization
-string Process::Ram() { return string(); }
+string Process::Ram()
+{
+    return LinuxParser::Ram(pid_);
+}
 
-// TODO: Return the user (name) that generated this process
+// DONE: Return the user (name) that generated this process
 string Process::User()
 {
     return LinuxParser::User(pid_);

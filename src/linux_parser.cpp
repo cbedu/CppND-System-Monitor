@@ -267,30 +267,30 @@ string LinuxParser::Command(int pid)
   return string();
 }
 
-// TODO: Read and return the memory used by a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid[[maybe_unused]])
+// DONE: Read and return the memory used by a process
+string LinuxParser::Ram(int pid)
 {
   // https://man7.org/linux/man-pages/man5/proc.5.html
   // /proc/[pid]/status has VmXXX for memory mappings for fast values
   // statm values match status for what we need
   // smaps is more accurate but much slower.
-
+  string ram = KeyValLookup<string>(kProcDirectory + to_string(pid) + kStatusFilename,"VmRSS:");
+  
   // return string of memory used by a given process
-  return string();
+  return ram;
 }
 
-// TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
+// DONE: Read and return the user ID associated with a process
 string LinuxParser::Uid(int pid)
 {
   // from /proc/[pid]/status   grab string starting "Uid:"
   //  just take first field (real uid) for now
   // return the string representation of the userID of a given process
-  return "bob";
+  std::string uid = LinuxParser::KeyValLookup<std::string>(kProcDirectory + to_string(pid) + kStatusFilename , "Uid:");
+  return uid;
 }
 
-// TESTING : Read and return the user associated with a process
+// DONE : Read and return the user associated with a process
 string LinuxParser::User(int pid)
 {
   // scan /etc/passwd for the uid, extract name
