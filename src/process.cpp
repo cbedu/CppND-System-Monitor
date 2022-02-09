@@ -19,7 +19,7 @@ float Process::CpuUtilization()
 {
     return (float)LinuxParser::ActiveJiffies(pid_)/(float)LinuxParser::Jiffies();
 
-    // <<TODO>> << REWRITE >> This section (or lower) seems to be annoying valgrind.
+    // <<POSSIBLE-TODO>> << REWRITE >> This section (or lower) seems to be annoying valgrind.
     long tempActive = LinuxParser::ActiveJiffies(pid_);
     long tempActiveDelta = tempActive - prevActiveJiffies_;
 
@@ -32,7 +32,7 @@ float Process::CpuUtilization()
     float val = (float)tempActiveDelta / (float)tempTotalDelta;
     if(val < 0.00)
         val = 0.00f;
-    //return 10.00f; // <<DELETE>>
+
     return val;
 }
 
@@ -42,7 +42,7 @@ string Process::Command()
     return LinuxParser::Command(pid_);
 }
 
-// TODO: Return this process's memory utilization
+// DONE: Return this process's memory utilization
 string Process::Ram()
 {
     return LinuxParser::Ram(pid_);
@@ -54,9 +54,13 @@ string Process::User()
     return LinuxParser::User(pid_);
 }
 
-// TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return 0; }
+// DONE: Return the age of this process (in seconds)
+long int Process::UpTime()
+{
+    // just Uptime(pid_) is huge, needs to be taken from total up.
+    return LinuxParser::UpTime() - LinuxParser::UpTime(pid_);
+}
 
-// TODO: Overload the "less than" comparison operator for Process objects
+// NOTHING-TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function
 bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }

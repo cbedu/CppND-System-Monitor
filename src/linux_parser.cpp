@@ -127,8 +127,7 @@ long LinuxParser::JiffiesDelta()
   return globalJiffies->totalDelta;
 }
 
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
+// DONE: Read and return the number of active jiffies for a PID
 long LinuxParser::ActiveJiffies(int pid[[maybe_unused]])
 {
   // man proc 5  (see proc/[pid]/stat  (14) ... (17))
@@ -216,7 +215,6 @@ long LinuxParser::ActiveJiffiesDelta()
   return globalJiffies->activeDelta;
 }
 
-
 long LinuxParser::IdleJiffiesDelta()
 {
   LinuxParser::UpdateGlobalJiffies();
@@ -224,11 +222,27 @@ long LinuxParser::IdleJiffiesDelta()
   return globalJiffies->idleDelta;
 }
 
-// TODO: Read and return CPU utilization
+// DONE: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization()
 {
+  // vector version of LinuxParser::UpTime()
+  vector<string> cpus;
+  std::string line;
+
+  std::ifstream stream(kProcDirectory + kUptimeFilename);
+  if (stream.is_open())
+  {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    string target;
+    while (linestream >> target)
+    {
+      cpus.push_back(target);
+    }
+  }
+
   // return a vector of cpu utilisation values
-  return {};
+  return cpus;
 }
 
 // DONE : Read and return the total number of processes
@@ -330,7 +344,7 @@ long LinuxParser::UpTime(int pid)
   int targetField = 22;
   long uptime;
   string line;
-  std::ifstream stream(kProcDirectory + to_string(pid) + kUptimeFilename);
+  std::ifstream stream(kProcDirectory + to_string(pid) + kStatFilename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
@@ -342,7 +356,6 @@ long LinuxParser::UpTime(int pid)
   }
   return uptime;
   // return the UpTime of a given process.
-  return 0;
 }
 
 //// Helper functions
