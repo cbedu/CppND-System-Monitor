@@ -5,29 +5,61 @@
 #include <vector>
 
 #include "process.h"
+#include "linux_parser.h"
 
 using std::string;
 using std::to_string;
 using std::vector;
 
-// TODO: Return this process's ID
-int Process::Pid() { return 0; }
+// DONE : Return this process's ID
+int Process::Pid() { return pid_; }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+// DONE : Return this process's CPU utilization
+float Process::CpuUtilization()
+{
+    long tempActive = LinuxParser::ActiveJiffies(pid_);
+    long tempActiveDelta = tempActive - prevActiveJiffies_;
 
-// TODO: Return the command that generated this process
-string Process::Command() { return string(); }
+    long tempTotal = LinuxParser::Jiffies();
+    long tempTotalDelta = tempTotal - prevTotalJiffies_;
 
-// TODO: Return this process's memory utilization
-string Process::Ram() { return string(); }
+    prevActiveJiffies_ = tempActive;
+    prevTotalJiffies_ = tempTotal;
 
-// TODO: Return the user (name) that generated this process
-string Process::User() { return string(); }
+    float val = (float)tempActiveDelta / (float)tempTotalDelta;
+    if(val < 0.00)
+        val = 0.00f;
 
-// TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return 0; }
+    return val;
+}
 
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+// DONE : Return the command that generated this process
+string Process::Command()
+{
+    return LinuxParser::Command(pid_);
+}
+
+// DONE: Return this process's memory utilization
+string Process::Ram()
+{
+    return LinuxParser::Ram(pid_);
+}
+
+// DONE: Return the user (name) that generated this process
+string Process::User()
+{
+    return LinuxParser::User(pid_);
+}
+
+// DONE: Return the age of this process (in seconds)
+long int Process::UpTime()
+{
+    // just Uptime(pid_) is huge, needs to be taken from total up.
+    return LinuxParser::UpTime() - LinuxParser::UpTime(pid_);
+}
+
+// DONE: Overload the "less than" comparison operator for Process objects
+bool Process::operator<(Process & a)
+{   // internal values are updated for deltaJiffies so can't be const
+    return this->CpuUtilization() < a.CpuUtilization(); 
+}
